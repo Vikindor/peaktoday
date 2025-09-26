@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Peak Today</title>
+    <style>
+      @font-face {
+        font-family: 'CaveatBrush';
+        src: url('assets/caveatbrush_regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'PatrickHand';
+        src: url('assets/patrickhand_regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --bg: #0b0f13;
+        --card: #2E2E2E;
+        --text: #2E2E2E;
+		--lh-small: 28px;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: url("assets/peak_bg.jpg") center/cover no-repeat fixed;
+        color: var(--text);
+        font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      .wrap {
+        width: min(920px, 92vw);
+        display: grid;
+        gap: 18px;
+      }
+      .title {
+        font-family: 'CaveatBrush', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+        font-weight: 400;
+        font-size: clamp(28px, 4vw, 44px);
+        letter-spacing: .2px;
+        color: var(--text);
+        text-align: center;
+        opacity: .95;
+      }
+      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
+      @media (max-width: 980px) {
+        .cards { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 640px) {
+        .cards { grid-template-columns: 1fr; }
+      }
+	  .card {
+	    background: #D1A55C;
+	    border: 1px solid rgba(0,0,0,0.15);
+	    border-radius: 16px;
+	    padding: 18px;
+        display: flex;
+        flex-direction: column;
+        min-height: auto;
+	    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+	  }
+	  .card-footer { margin-top: auto; }
+      .label { color: var(--text); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+      .value { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(20px, 4.5vw, 42px); font-weight: 400; margin-top: 6px; }
+      .value.small { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(18px, 2.4vw, 22px); font-weight: 400; }
+      /* Map name in the first card — bigger and CaveatBrush */
+      #currentMap.value { font-family: 'CaveatBrush', system-ui; font-size: clamp(36px, 6vw, 72px); font-weight: 400; }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .mono { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
+      footer { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; color: var(--text); }
+	  footer a { color: inherit; text-decoration: none; }
+	  footer a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1 class="title">Peak Today</h1>
+
+      <section class="cards">
+        <div class="card">
+          <div class="label">Current map</div>
+          <div class="value" id="currentMap">—</div>
+        </div>
+
+        <div class="card">
+          <div class="label">Time left to switch</div>
+          <div class="value mono" id="countdown">--:--:--</div>
+          <div class="card-footer">
+            <div class="value small" id="nextSwitchLocal">—</div>
+            <div class="value small" id="nextSwitchUTC">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label">Now</div>
+          <div class="value mono" id="nowClock">--:--:--</div>
+          <div class="card-footer">
+            <div class="value small" id="nowLocal">—</div>
+            <div class="value small" id="nowUTC">—</div>
+          </div>
+        </div>
+      </section>
+	  
+	  <footer>
+	  Created by <a href="https://vikindor.github.io/" target="_blank">Vikindor</a>
+	  </footer>	  
+    </main>
+
+    <script>
+      "use strict";
+      // ===== Domain model =====
+      const MapType = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
+      const anchor = Object.freeze({
+        // 2025-09-01 17:00:00 UTC
+        switchUtcMs: Date.UTC(2025, 8, 1, 17, 0, 0, 0),
+        mapAfterSwitch: MapType.Alpine,
+      });
+      const DAY_SEC = 86_400; // 24 * 60 * 60
+      const DAY_MS = DAY_SEC * 1000;
+      function floorDiv(a, b) { return Math.floor(a / b); }
+      function daysSinceAnchor(nowUtcMs) {
+        const seconds = Math.floor((nowUtcMs - anchor.switchUtcMs) / 1000);
+        return floorDiv(seconds, DAY_SEC);
+      }
+      function other(map) { return map === MapType.Mesa ? MapType.Alpine : MapType.Mesa; }
+      function currentMap(nowUtcMs) {
+        const days = daysSinceAnchor(nowUtcMs);
+        return (days % 2 === 0) ? anchor.mapAfterSwitch : other(anchor.mapAfterSwitch);
+      }
+      function nextSwitchUtcMs(nowUtcMs) {
+        const days = daysSinceAnchor(nowUtcMs);
+        return anchor.switchUtcMs + (days + 1) * DAY_MS;
+      }
+      function countdownMs(nowUtcMs) {
+        const ns = nextSwitchUtcMs(nowUtcMs);
+        const diff = ns - nowUtcMs;
+        return Math.max(0, diff);
+      }
+      // ===== UI helpers =====
+      function pad2(n) { return String(n).padStart(2, "0"); }
+      function formatHMS(totalSeconds) {
+        const total = Math.max(0, Math.floor(totalSeconds));
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = total % 60;
+        return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+      }
+      function fmtDateTime(dt, withTzName = false) {
+        const opts = { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const s = new Intl.DateTimeFormat(undefined, opts).format(dt);
+        if (!withTzName) return s;
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        return `${s} (${tz})`;
+      }
+      function fmtDateTimeUTC(ms) {
+        const dt = new Date(ms);
+		return dt.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+      }
+      // ===== Render loop =====
+      const elCurrentMap = document.getElementById('currentMap');
+      const elCountdown = document.getElementById('countdown');
+      const elNextLocal = document.getElementById('nextSwitchLocal');
+      const elNextUTC = document.getElementById('nextSwitchUTC');
+      const elNowLocal = document.getElementById('nowLocal');
+      const elNowUTC = document.getElementById('nowUTC');
+      const elNowClock = document.getElementById('nowClock');
+      function tick() {
+        const now = new Date();
+        const nowUtcMs = now.getTime();
+        const map = currentMap(nowUtcMs);
+        const nextMs = nextSwitchUtcMs(nowUtcMs);
+        const leftMs = countdownMs(nowUtcMs);
+        // Map name
+        if (elCurrentMap) elCurrentMap.textContent = map;
+        // Times
+        if (elCountdown) elCountdown.textContent = formatHMS(leftMs / 1000);
+		elNextLocal.innerHTML = `Next switch (local):<br>${fmtDateTime(new Date(nextMs), true)}`;
+		elNextUTC.innerHTML   = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
+		elNowLocal.innerHTML  = `Now (local):<br>${fmtDateTime(now, true)}`;
+		elNowUTC.innerHTML    = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+        if (elNowClock) {
+          const hh = pad2(now.getHours());
+          const mm = pad2(now.getMinutes());
+          const ss = pad2(now.getSeconds());
+          elNowClock.textContent = `${hh}:${mm}:${ss}`;
+        }
+      }
+      tick();
+      setInterval(tick, 1000);
+    </script>
+  </body>
+</html>
