@@ -3,7 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta property="og:title" content="Peak Today — rotation timer" />
+	<meta property="og:description" content="Web-version of Peak Today app: live map rotation timer." />
+	<meta property="og:image" content="https://vikindor.github.io/peaktoday/assets/preview.png" />
+	<meta property="og:url" content="https://vikindor.github.io/peaktoday/" />
+	<meta property="og:type" content="website" />
     <title>Peak Today</title>
+	<link rel="icon" type="image/png" href="assets/favicon.png">
     <style>
       @font-face {
         font-family: 'CaveatBrush';
@@ -30,7 +36,7 @@
       html, body { height: 100%; }
       body {
         margin: 0;
-        background: url("assets/peak_bg.jpg") center/cover no-repeat fixed;
+        background: url("assets/bg.jpg") center/cover no-repeat fixed;
         color: var(--text);
         font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
         display: grid;
@@ -44,7 +50,7 @@
       .title {
         font-family: 'CaveatBrush', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
         font-weight: 400;
-        font-size: clamp(28px, 4vw, 44px);
+        font-size: clamp(28px, 4vw, 56px);
         letter-spacing: .2px;
         color: var(--text);
         text-align: center;
@@ -153,16 +159,18 @@
         const s = total % 60;
         return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
       }
-      function fmtDateTime(dt, withTzName = false) {
-        const opts = { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-        const s = new Intl.DateTimeFormat(undefined, opts).format(dt);
-        if (!withTzName) return s;
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        return `${s} (${tz})`;
-      }
+	  function fmtDateTime(dt) {
+	  const y  = dt.getFullYear();
+	  const m  = String(dt.getMonth() + 1).padStart(2, "0");
+	  const d  = String(dt.getDate()).padStart(2, "0");
+	  const hh = String(dt.getHours()).padStart(2, "0");
+	  const mm = String(dt.getMinutes()).padStart(2, "0");
+	  const ss = String(dt.getSeconds()).padStart(2, "0");
+	  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+	  }
       function fmtDateTimeUTC(ms) {
         const dt = new Date(ms);
-		return dt.toISOString().slice(0, 19).replace('T', ' ') + ' UTC';
+		return dt.toISOString().slice(0, 19).replace('T', ' ');
       }
       // ===== Render loop =====
       const elCurrentMap = document.getElementById('currentMap');
