@@ -1,6 +1,6 @@
-<h2 align="center">
+<h1 align="center">
 Peak Today (Web)
-</h2>
+</h1>
 
 ## 📌 About
 
@@ -12,9 +12,9 @@ This is an **unofficial project**. It is not affiliated with or endorsed by Land
 The project does not use any original game assets. All rights to **PEAK** and its assets belong to Landfall Games.
 No copyright or trademark infringement is intended.
 
-## 🌐 Live Demo
+## 🌐 Link
 
-[![pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://vikindor.github.io/peaktoday/)  
+[![pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://vikindor.github.io/peaktoday/)
 👉 Open it here: **[vikindor.github.io/peaktoday](https://vikindor.github.io/peaktoday/)**
 
 ## ✨ Features
@@ -26,7 +26,7 @@ No copyright or trademark infringement is intended.
 
 ## 🖼 Screenshots
 
-<img src="assets/peak_scr_web.jpg" width="600"/>
+<img src="assets/peak_scr_web.jpg" width="400"/>
 
 ## 🛠 Tech stack
 
