@@ -25,7 +25,6 @@
         font-style: normal;
         font-display: swap;
       }
-
       :root {
         --bg: #0b0f13;
         --card: #2E2E2E;
@@ -159,19 +158,51 @@
         const s = total % 60;
         return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
       }
-	  function fmtDateTime(dt) {
-	  const y  = dt.getFullYear();
-	  const m  = String(dt.getMonth() + 1).padStart(2, "0");
-	  const d  = String(dt.getDate()).padStart(2, "0");
-	  const hh = String(dt.getHours()).padStart(2, "0");
-	  const mm = String(dt.getMinutes()).padStart(2, "0");
-	  const ss = String(dt.getSeconds()).padStart(2, "0");
-	  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
-	  }
+
+      // --- Time zone by IP (no user overrides) ---
+      let SELECTED_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      async function detectTimeZone() {
+        try {
+          const r1 = await fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' });
+          if (r1.ok) {
+            const j = await r1.json();
+            if (j.timezone) return j.timezone;
+          }
+        } catch {}
+        try {
+          const r2 = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
+          if (r2.ok) {
+            const j = await r2.json();
+            if (j.timezone) return j.timezone;
+          }
+        } catch {}
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      }
+
+      // --- ISO formatters in an arbitrary time zone ---
+      function fmtISOInTZ(ms, timeZone) {
+        const parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone,
+          hour12: false,
+          year: 'numeric', month: '2-digit', day: '2-digit',
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).formatToParts(new Date(ms)).reduce((a, p) => (a[p.type] = p.value, a), {});
+        return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
+      }
+
+      function fmtHMSTZ(ms, timeZone) {
+        const p = new Intl.DateTimeFormat('en-GB', {
+          timeZone, hour12: false,
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }).formatToParts(new Date(ms)).reduce((a, x) => (a[x.type] = x.value, a), {});
+        return `${p.hour}:${p.minute}:${p.second}`;
+      }
       function fmtDateTimeUTC(ms) {
         const dt = new Date(ms);
 		return dt.toISOString().slice(0, 19).replace('T', ' ');
       }
+
       // ===== Render loop =====
       const elCurrentMap = document.getElementById('currentMap');
       const elCountdown = document.getElementById('countdown');
@@ -180,6 +211,7 @@
       const elNowLocal = document.getElementById('nowLocal');
       const elNowUTC = document.getElementById('nowUTC');
       const elNowClock = document.getElementById('nowClock');
+
       function tick() {
         const now = new Date();
         const nowUtcMs = now.getTime();
@@ -188,21 +220,39 @@
         const leftMs = countdownMs(nowUtcMs);
         // Map name
         if (elCurrentMap) elCurrentMap.textContent = map;
-        // Times
+        // Timers
         if (elCountdown) elCountdown.textContent = formatHMS(leftMs / 1000);
-		elNextLocal.innerHTML = `Next switch (local):<br>${fmtDateTime(new Date(nextMs), true)}`;
-		elNextUTC.innerHTML   = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
-		elNowLocal.innerHTML  = `Now (local):<br>${fmtDateTime(now, true)}`;
-		elNowUTC.innerHTML    = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+
+        // Local now/next in IP-based time zone (ISO)
+        elNextLocal.innerHTML = `Next switch (local):<br>${fmtISOInTZ(nextMs, SELECTED_TZ)}`;
+        elNowLocal.innerHTML  = `Now (local):<br>${fmtISOInTZ(nowUtcMs, SELECTED_TZ)}`;
+
+        // UTC stays as ISO in UTC
+        elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
+        elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+
+        // Big clock in IP-based time zone
         if (elNowClock) {
-          const hh = pad2(now.getHours());
-          const mm = pad2(now.getMinutes());
-          const ss = pad2(now.getSeconds());
-          elNowClock.textContent = `${hh}:${mm}:${ss}`;
+          elNowClock.textContent = fmtHMSTZ(nowUtcMs, SELECTED_TZ);
         }
       }
-      tick();
-      setInterval(tick, 1000);
+	  
+	  tick();
+	  setInterval(tick, 1000);
+	  
+	  (async () => {
+	  const withTimeout = (p, ms) =>
+	  Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('tz timeout')), ms))]);
+	  
+	  try {
+	  const tz = await withTimeout(detectTimeZone(), 1500);
+	  if (tz && typeof tz === 'string') {
+      SELECTED_TZ = tz;
+	  }
+	  } catch {
+	  // молча остаёмся на системной TZ
+	  }
+	  })();
     </script>
   </body>
 </html>
