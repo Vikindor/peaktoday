@@ -15,7 +15,8 @@ No copyright or trademark infringement is intended.
 ## 🌐 Link
 
 [![pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://vikindor.github.io/peaktoday/)
-👉 Open it here: **[vikindor.github.io/peaktoday](https://vikindor.github.io/peaktoday/)**
+
+**[vikindor.github.io/peaktoday](https://vikindor.github.io/peaktoday/)**
 
 ## ✨ Features
 
