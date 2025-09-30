@@ -4,7 +4,7 @@ Peak Today (Web)
 
 ## 📌 About
 
-**Peak Today (Web)** is the browser-based version of the non-commercial fan-made application that helps track the current map (biome) rotation in the game **[PEAK](https://landfall.se/peak)** by Landfall Games.
+**Peak Today (Web)** is the browser-based version of the non-commercial fan-made <a href="https://github.com/Vikindor/peaktoday-android" target="_blank">application</a> that helps track the current map (biome) rotation in the game **[PEAK](https://landfall.se/peak)** by Landfall Games.
 
 ## ⚠ Disclaimer
 
@@ -37,4 +37,4 @@ No copyright or trademark infringement is intended.
 
 ## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE)
