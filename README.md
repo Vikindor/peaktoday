@@ -3,7 +3,9 @@ Peak Today (Web)
 </h1>
 
 <div align="center">
+
 [![pages](https://img.shields.io/badge/GitHub%20Pages-live-brightgreen)](https://vikindor.github.io/peaktoday/)
+
 </div>
 
 ## 📌 About
