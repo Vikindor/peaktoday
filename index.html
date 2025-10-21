@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta property="og:title" content="Peak Today — map rotation timer">
 	<meta property="og:description" content="Live web version of Peak Today app for tracking map switches">
-	<meta property="og:image" content="https://vikindor.github.io/peaktoday/assets/preview.png">
+	<meta property="og:image" content="https://vikindor.github.io/peaktoday/assets/preview.jpg">
 	<meta property="og:url" content="https://vikindor.github.io/peaktoday/">
 	<meta property="og:type" content="website">
     <title>Peak Today</title>
@@ -26,10 +26,7 @@
         font-display: swap;
       }
       :root {
-        --bg: #0b0f13;
-        --card: #2E2E2E;
         --text: #2E2E2E;
-		--lh-small: 28px;
       }
       * { box-sizing: border-box; }
       html, body { height: 100%; }
@@ -41,11 +38,6 @@
         display: grid;
         place-items: center;
       }
-      .wrap {
-        width: min(920px, 92vw);
-        display: grid;
-        gap: 18px;
-      }
       .title {
         font-family: 'CaveatBrush', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
         font-weight: 400;
@@ -55,12 +47,14 @@
         text-align: center;
         opacity: .95;
       }
-      .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
-      @media (max-width: 980px) {
-        .cards { grid-template-columns: repeat(2, 1fr); }
+      .cards {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(2, minmax(0, 300px));
+        justify-content: center;
       }
       @media (max-width: 640px) {
-        .cards { grid-template-columns: 1fr; }
+        .cards { grid-template-columns: repeat(1, minmax(0, 300px)); }
       }
 	  .card {
 	    background: #D1A55C;
@@ -69,18 +63,15 @@
 	    padding: 18px;
         display: flex;
         flex-direction: column;
-        min-height: auto;
 	    box-shadow: 0 10px 30px rgba(0,0,0,.35);
 	  }
 	  .card-footer { margin-top: auto; }
-      .label { color: var(--text); font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+	  .label { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
       .value { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(20px, 4.5vw, 42px); font-weight: 400; margin-top: 6px; }
-      .value.small { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(18px, 2.4vw, 22px); font-weight: 400; }
-      /* Map name in the first card — bigger and CaveatBrush */
+      .value.small { font-size: clamp(18px, 2.4vw, 22px); }
       #currentMap.value { font-family: 'CaveatBrush', system-ui; font-size: clamp(36px, 6vw, 72px); font-weight: 400; }
       .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .mono { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
-      footer { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; color: var(--text); }
+      footer { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; }
 	  footer a { color: inherit; text-decoration: none; }
 	  footer a:hover { text-decoration: underline; }
     </style>
@@ -97,31 +88,22 @@
 
         <div class="card">
           <div class="label">Time left to switch</div>
-          <div class="value mono" id="countdown">--:--:--</div>
+          <div class="value" id="countdown">--:--:--</div>
           <div class="card-footer">
-            <div class="value small" id="nextSwitchLocal">—</div>
+            <!-- оставляем только UTC-поля -->
+            <div class="value small" id="nowUTC">—</div>
             <div class="value small" id="nextSwitchUTC">—</div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="label">Now</div>
-          <div class="value mono" id="nowClock">--:--:--</div>
-          <div class="card-footer">
-            <div class="value small" id="nowLocal">—</div>
-            <div class="value small" id="nowUTC">—</div>
-          </div>
-        </div>
       </section>
-	  
-	  <footer>
-	  Created by <a href="https://vikindor.github.io/" target="_blank">Vikindor</a>
-	  </footer>	  
+
+      <footer>
+        Created by <a href="https://vikindor.github.io/" target="_blank">Vikindor</a>
+      </footer>
     </main>
 
     <script>
       "use strict";
-      // ===== Domain model =====
       const MapType = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
       const anchor = Object.freeze({
         // 2025-09-01 17:00:00 UTC
@@ -149,7 +131,13 @@
         const diff = ns - nowUtcMs;
         return Math.max(0, diff);
       }
+
       // ===== UI helpers =====
+      const elCurrentMap = document.getElementById('currentMap');
+      const elCountdown = document.getElementById('countdown');
+      const elNextUTC = document.getElementById('nextSwitchUTC');
+      const elNowUTC  = document.getElementById('nowUTC');
+
       function pad2(n) { return String(n).padStart(2, "0"); }
       function formatHMS(totalSeconds) {
         const total = Math.max(0, Math.floor(totalSeconds));
@@ -158,59 +146,10 @@
         const s = total % 60;
         return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
       }
-
-      // --- Time zone by IP (no user overrides) ---
-      let SELECTED_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-      async function detectTimeZone() {
-        try {
-          const r1 = await fetch('https://worldtimeapi.org/api/ip', { cache: 'no-store' });
-          if (r1.ok) {
-            const j = await r1.json();
-            if (j.timezone) return j.timezone;
-          }
-        } catch {}
-        try {
-          const r2 = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
-          if (r2.ok) {
-            const j = await r2.json();
-            if (j.timezone) return j.timezone;
-          }
-        } catch {}
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
-      }
-
-      // --- ISO formatters in an arbitrary time zone ---
-      function fmtISOInTZ(ms, timeZone) {
-        const parts = new Intl.DateTimeFormat('en-CA', {
-          timeZone,
-          hour12: false,
-          year: 'numeric', month: '2-digit', day: '2-digit',
-          hour: '2-digit', minute: '2-digit', second: '2-digit'
-        }).formatToParts(new Date(ms)).reduce((a, p) => (a[p.type] = p.value, a), {});
-        return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute}:${parts.second}`;
-      }
-
-      function fmtHMSTZ(ms, timeZone) {
-        const p = new Intl.DateTimeFormat('en-GB', {
-          timeZone, hour12: false,
-          hour: '2-digit', minute: '2-digit', second: '2-digit'
-        }).formatToParts(new Date(ms)).reduce((a, x) => (a[x.type] = x.value, a), {});
-        return `${p.hour}:${p.minute}:${p.second}`;
-      }
       function fmtDateTimeUTC(ms) {
         const dt = new Date(ms);
-		return dt.toISOString().slice(0, 19).replace('T', ' ');
+        return dt.toISOString().slice(0, 19).replace('T', ' ');
       }
-
-      // ===== Render loop =====
-      const elCurrentMap = document.getElementById('currentMap');
-      const elCountdown = document.getElementById('countdown');
-      const elNextLocal = document.getElementById('nextSwitchLocal');
-      const elNextUTC = document.getElementById('nextSwitchUTC');
-      const elNowLocal = document.getElementById('nowLocal');
-      const elNowUTC = document.getElementById('nowUTC');
-      const elNowClock = document.getElementById('nowClock');
 
       function tick() {
         const now = new Date();
@@ -218,41 +157,14 @@
         const map = currentMap(nowUtcMs);
         const nextMs = nextSwitchUtcMs(nowUtcMs);
         const leftMs = countdownMs(nowUtcMs);
-        // Map name
+
         if (elCurrentMap) elCurrentMap.textContent = map;
-        // Timers
-        if (elCountdown) elCountdown.textContent = formatHMS(leftMs / 1000);
-
-        // Local now/next in IP-based time zone (ISO)
-        elNextLocal.innerHTML = `Next switch (local):<br>${fmtISOInTZ(nextMs, SELECTED_TZ)}`;
-        elNowLocal.innerHTML  = `Now (local):<br>${fmtISOInTZ(nowUtcMs, SELECTED_TZ)}`;
-
-        // UTC stays as ISO in UTC
-        elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
-        elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
-
-        // Big clock in IP-based time zone
-        if (elNowClock) {
-          elNowClock.textContent = fmtHMSTZ(nowUtcMs, SELECTED_TZ);
-        }
+        if (elCountdown)  elCountdown.textContent = formatHMS(leftMs / 1000);
+        if (elNowUTC)  elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+        if (elNextUTC) elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
       }
-	  
-	  tick();
-	  setInterval(tick, 1000);
-	  
-	  (async () => {
-	  const withTimeout = (p, ms) =>
-	  Promise.race([p, new Promise((_, r) => setTimeout(() => r(new Error('tz timeout')), ms))]);
-	  
-	  try {
-	  const tz = await withTimeout(detectTimeZone(), 1500);
-	  if (tz && typeof tz === 'string') {
-      SELECTED_TZ = tz;
-	  }
-	  } catch {
-	  // молча остаёмся на системной TZ
-	  }
-	  })();
+      tick();
+      setInterval(tick, 1000);
     </script>
   </body>
 </html>
