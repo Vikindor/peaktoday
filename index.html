@@ -136,71 +136,73 @@
 	} catch (_) {}
 	</script>
 
-    <script>
-	  "use strict";
-      const MapType = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
-      const anchor = Object.freeze({
-        switchUtcMs: Date.UTC(2025, 8, 1, 17, 0, 0, 0), // 2025-09-01 17:00:00 UTC
+	<script>
+	"use strict";
+	const MapType = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
+	const anchor = Object.freeze({
+		switchUtcMs: Date.UTC(2025, 8, 1, 17, 0, 0, 0), // 2025-09-01 17:00:00 UTC
 		get mapAfterSwitch() {
 		const v = __anchorState.mapAfterSwitch;
-		return (v === "Mesa" || v === "Alpine") ? MapType[v] : MapType.Mesa; // Old default anchor
+		return (v === "Mesa" || v === "Alpine") ? MapType[v] : null;
 		},
-      });
-      const DAY_SEC = 86_400;
-      const DAY_MS = DAY_SEC * 1000;
-      function floorDiv(a, b) { return Math.floor(a / b); }
-      function daysSinceAnchor(nowUtcMs) {
-        const seconds = Math.floor((nowUtcMs - anchor.switchUtcMs) / 1000);
-        return floorDiv(seconds, DAY_SEC);
-      }
-      function other(map) { return map === MapType.Mesa ? MapType.Alpine : MapType.Mesa; }
-      function currentMap(nowUtcMs) {
-        const days = daysSinceAnchor(nowUtcMs);
-        return (days % 2 === 0) ? anchor.mapAfterSwitch : other(anchor.mapAfterSwitch);
-      }
-      function nextSwitchUtcMs(nowUtcMs) {
-        const days = daysSinceAnchor(nowUtcMs);
-        return anchor.switchUtcMs + (days + 1) * DAY_MS;
-      }
-      function countdownMs(nowUtcMs) {
-        const ns = nextSwitchUtcMs(nowUtcMs);
-        const diff = ns - nowUtcMs;
-        return Math.max(0, diff);
-      }
-
-      // ===== UI helpers =====
-      const elCurrentMap = document.getElementById('currentMap');
-      const elCountdown = document.getElementById('countdown');
-      const elNextUTC = document.getElementById('nextSwitchUTC');
-      const elNowUTC  = document.getElementById('nowUTC');
-
-      function pad2(n) { return String(n).padStart(2, "0"); }
-      function formatHMS(totalSeconds) {
-        const total = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(total / 3600);
-        const m = Math.floor((total % 3600) / 60);
-        const s = total % 60;
-        return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
-      }
-      function fmtDateTimeUTC(ms) {
-        const dt = new Date(ms);
-        return dt.toISOString().slice(0, 19).replace('T', ' ');
-      }
-
-      function tick() {
-        const now = new Date();
-        const nowUtcMs = now.getTime();
-        const map = currentMap(nowUtcMs);
-        const nextMs = nextSwitchUtcMs(nowUtcMs);
-        const leftMs = countdownMs(nowUtcMs);
-
-        if (elCurrentMap) elCurrentMap.textContent = map;
-        if (elCountdown)  elCountdown.textContent = formatHMS(leftMs / 1000);
-        if (elNowUTC)  elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
-        if (elNextUTC) elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
-      }
-      tick();
-      setInterval(tick, 1000);
-    </script>
+	});
+	const DAY_SEC = 86_400;
+	const DAY_MS = DAY_SEC * 1000;
+	function floorDiv(a, b) { return Math.floor(a / b); }
+	function daysSinceAnchor(nowUtcMs) {
+		const seconds = Math.floor((nowUtcMs - anchor.switchUtcMs) / 1000);
+		return floorDiv(seconds, DAY_SEC);
+	}
+	function other(map) { return map === MapType.Mesa ? MapType.Alpine : MapType.Mesa; }
+	function currentMap(nowUtcMs) {
+		const base = anchor.mapAfterSwitch;
+		if (!base) return null;
+		const days = daysSinceAnchor(nowUtcMs);
+		return (days % 2 === 0) ? base : other(base);
+	}
+	function nextSwitchUtcMs(nowUtcMs) {
+		const days = daysSinceAnchor(nowUtcMs);
+		return anchor.switchUtcMs + (days + 1) * DAY_MS;
+	}
+	function countdownMs(nowUtcMs) {
+		const ns = nextSwitchUtcMs(nowUtcMs);
+		const diff = ns - nowUtcMs;
+		return Math.max(0, diff);
+	}
+	
+	// ===== UI helpers =====
+	const elCurrentMap = document.getElementById('currentMap');
+	const elCountdown = document.getElementById('countdown');
+	const elNextUTC = document.getElementById('nextSwitchUTC');
+	const elNowUTC  = document.getElementById('nowUTC');
+	
+	function pad2(n) { return String(n).padStart(2, "0"); }
+	function formatHMS(totalSeconds) {
+		const total = Math.max(0, Math.floor(totalSeconds));
+		const h = Math.floor(total / 3600);
+		const m = Math.floor((total % 3600) / 60);
+		const s = total % 60;
+		return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+	}
+	function fmtDateTimeUTC(ms) {
+		const dt = new Date(ms);
+		return dt.toISOString().slice(0, 19).replace('T', ' ');
+	}
+	
+	function tick() {
+		const now = new Date();
+		const nowUtcMs = now.getTime();
+		const map = currentMap(nowUtcMs);
+		const nextMs = nextSwitchUtcMs(nowUtcMs);
+		const leftMs = countdownMs(nowUtcMs);
+	
+		if (elCurrentMap) elCurrentMap.textContent = (map ?? '-');
+		if (elCountdown)  elCountdown.textContent = formatHMS(leftMs / 1000);
+		if (elNowUTC)  elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+		if (elNextUTC) elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
+	}
+	tick();
+	setInterval(tick, 1000);
+	</script>
   </body>
 </html>
