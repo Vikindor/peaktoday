@@ -37,7 +37,3 @@ No copyright or trademark infringement is intended.
 - HTML + CSS
 - JavaScript
 - GitHub Pages
-
-## 📜 License
-
-This project is licensed under the [MIT License](LICENSE)
