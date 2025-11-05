@@ -66,6 +66,23 @@
 	    box-shadow: 0 10px 30px rgba(0,0,0,.35);
 	  }	  
 	  .card-footer { margin-top: auto; }
+	  .notice {
+	  position: sticky;
+	  top: 0;
+	  z-index: 50;
+	  margin: 0 0 16px;
+	  padding: 12px 14px;
+	  border-radius: 16px;
+	  border: 1px solid rgba(0, 0, 0, .15);
+	  background: rgba(255, 245, 200, .95);
+	  color: var(--text);
+	  text-align: center;
+	  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+	  backdrop-filter: blur(3px);
+	  font-size: 14px;
+	  line-height: 1.4;
+	  }
+	  .notice.hidden { display: none; }
 	  .cta-wrap {
 		display: flex;
 		justify-content: center;
@@ -95,6 +112,13 @@
     <main class="wrap">
       <h1 class="title">Peak Today</h1>
 
+      <div class="notice">
+        The information may be <b>temporarily out of sync</b> due to the new biome update - 🍄<b>ROOTS</b>🍄.
+        Synchronization will be restored.<br>
+        If the new biome becomes part of the rotation, it will also be added to this site.
+        The site will be updated after the game update is released.
+	  </div>
+
       <section class="cards">
         <div class="card">
           <div class="label">Current map</div>
@@ -110,7 +134,7 @@
           </div>
         </div>
       </section>
-	  
+
 	  <div class="cta-wrap">
 		<a class="cta-btn" href="https://github.com/Vikindor/peaktoday-android" target="_blank" rel="noopener noreferrer">
 		<img class="cta-icon" src="assets/github_icon.png" alt="GitHub">Get the Android app</a>
