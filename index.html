@@ -10,119 +10,162 @@
 	<meta property="og:type" content="website">
     <title>Peak Today</title>
 	<link rel="icon" type="image/png" href="assets/favicon.png">
-    <style>
-      @font-face {
-        font-family: 'CaveatBrush';
-        src: url('assets/caveatbrush_regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      @font-face {
-        font-family: 'PatrickHand';
-        src: url('assets/patrickhand_regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-      }
-      :root {
-        --text: #2E2E2E;
-      }
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        background: url("assets/background.jpg") center/cover no-repeat fixed;
-        color: var(--text);
-        font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-        display: grid;
-        place-items: center;
-      }
-      .title {
-        font-family: 'CaveatBrush', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-        font-weight: 400;
-        font-size: clamp(28px, 4vw, 56px);
-        letter-spacing: .2px;
-        color: var(--text);
-        text-align: center;
-        opacity: .95;
-      }
-      .cards {
-        display: grid;
-        gap: 16px;
-        grid-template-columns: repeat(2, minmax(0, 300px));
-        justify-content: center;
-      }
-      @media (max-width: 640px) {
-        .cards { grid-template-columns: repeat(1, minmax(0, 300px)); }
-      }	  
-	  .card {
-	    background: #D1A55C;
-	    border: 1px solid rgba(0,0,0,0.15);
-	    border-radius: 16px;
-	    padding: 18px;
-        display: flex;
-        flex-direction: column;
-	    box-shadow: 0 10px 30px rgba(0,0,0,.35);
-	  }	  
-	  .card-footer { margin-top: auto; }
-	  .notice {
-	  position: sticky;
-	  top: 0;
-	  z-index: 50;
-	  margin: 0 0 16px;
-	  padding: 12px 14px;
-	  border-radius: 16px;
-	  border: 1px solid rgba(0, 0, 0, .15);
-	  background: rgba(255, 245, 200, .95);
-	  color: var(--text);
-	  text-align: center;
-	  box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
-	  backdrop-filter: blur(3px);
-	  font-size: 14px;
-	  line-height: 1.4;
-	  }
-	  .notice.hidden { display: none; }
-	  .cta-wrap {
-		display: flex;
-		justify-content: center;
-		margin-top: 58px;
-		}
-	  .cta-btn {
-	    display: inline-flex; align-items: center; gap: 10px;
-	    background: #2E2E2E; color: #fff; border: 1px solid rgba(0,0,0,.2);
-	    padding: 10px 14px; border-radius: 12px; text-decoration: none;
-	    font-weight: 600; letter-spacing: .2px; box-shadow: 0 6px 18px rgba(0,0,0,.25);
-	    transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
-	  }
-	  .cta-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.28); opacity: .96; }
-	  .cta-btn:active { transform: translateY(0); }
-	  .cta-icon { width: 18px; height: 18px; opacity: .9; }
-	  .label { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
-      .value { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(20px, 4.5vw, 42px); font-weight: 400; margin-top: 6px; }
-      .value.small { font-size: clamp(18px, 2.4vw, 22px); }
-      #currentMap.value { font-family: 'CaveatBrush', system-ui; font-size: clamp(36px, 6vw, 72px); font-weight: 400; }
-      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      footer { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; }
-	  footer a { color: inherit; text-decoration: none; }
-	  footer a:hover { text-decoration: underline; }
-    </style>
+  <style>
+    @font-face {
+      font-family: 'CaveatBrush';
+      src: url('assets/caveatbrush_regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'PatrickHand';
+      src: url('assets/patrickhand_regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    :root { --text: #2E2E2E; }
+  
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: url("assets/background.jpg") center/cover no-repeat fixed;
+      color: var(--text);
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      display: grid;
+      place-items: center;
+    }
+  
+    .title {
+      font-family: 'CaveatBrush', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      font-weight: 400;
+      font-size: clamp(28px, 4vw, 56px);
+      letter-spacing: .2px;
+      color: var(--text);
+      text-align: center;
+      opacity: .95;
+    }
+  
+    .wrap { justify-self: stretch; width: 100%; }
+  
+    .notice {
+      position: sticky;
+      top: 8px;
+      z-index: 50;
+      margin: 0 auto 16px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, .15);
+      background: rgba(255, 245, 200, .95);
+      color: var(--text);
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+      backdrop-filter: blur(3px);
+      font-size: 14px;
+      line-height: 1.4;
+      max-width: 1100px;
+    }
+    .notice.hidden { display: none; }
+
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 8px; font-size: 11px; line-height: 1;
+      border-radius: 9999px; background: rgba(46,46,46,.9); color: #fff;
+      border: 1px solid rgba(255,255,255,.12);
+      width: fit-content; margin-top: auto;
+      align-self: flex-start;
+    }
+    .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #26d07c; }
+    .status-pill .pill-text { color: #fff }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #D1A55C;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      flex: 0 0 300px;
+    }
+    .card-footer { margin-top: auto; }
+  
+    .cta-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 58px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #2E2E2E; color: #fff; border: 1px solid rgba(0,0,0,.2);
+      padding: 10px 14px; border-radius: 12px; text-decoration: none;
+      font-weight: 600; letter-spacing: .2px; box-shadow: 0 6px 18px rgba(0,0,0,.25);
+      transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .cta-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.28); opacity: .96; }
+    .cta-btn:active { transform: translateY(0); }
+    .cta-icon { width: 18px; height: 18px; opacity: .9; }
+  
+    .label { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+    .value { font-family: 'PatrickHand', system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; font-size: clamp(20px, 4.5vw, 42px); font-weight: 400; }
+    .value.small { font-size: clamp(18px, 2.4vw, 22px); }
+    #currentMap2,
+    #currentMap3 {
+      font-family: 'CaveatBrush', system-ui;
+      font-size: clamp(32px, 6vw, 72px);
+      font-weight: 400;    
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }  
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  
+    footer { position: fixed; bottom: 10px; left: 0; width: 100%; text-align: center; }
+    footer a { color: inherit; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+
   </head>
   <body>
     <main class="wrap">
       <h1 class="title">Peak Today</h1>
 
-      <div class="notice">
-        The information may be <b>temporarily out of sync</b> due to the new biome update - 🍄<b>ROOTS</b>🍄.
-        Synchronization will be restored.<br>
-        If the new biome becomes part of the rotation, it will also be added to this site.
-        The site will be updated after the game update is released.
+      <div class="notice hidden">
+        Notice placeholder
 	  </div>
 
       <section class="cards">
         <div class="card">
-          <div class="label">Current map</div>
-          <div class="value" id="currentMap">—</div>
+          <div class="label">Current map 2</div>
+          <div class="value" id="currentMap2">—</div>
+          <div class="status-pill" id="syncPill2" style="display:none;">
+            <span class="dot"></span>
+            <span class="pill-text">Synced: <span id="syncDate2">—</span></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="label">Current map 3</div>
+          <div class="value" id="currentMap3">—</div>
+          <div class="status-pill" id="syncPill3" style="display:none;">
+            <span class="dot"></span>
+            <span class="pill-text">Synced: <span id="syncDate3">—</span></span>
+          </div>
         </div>
 
         <div class="card">
@@ -144,89 +187,162 @@
         Created by <a href="https://vikindor.github.io/" target="_blank" rel="noopener noreferrer">Vikindor</a>
       </footer>
     </main>
-	
-	<script>
-	const REMOTE_MAP_URL = 'https://gist.githubusercontent.com/Vikindor/d1e75690b9795995c9c3a7551d71bc9e/raw/';
-	const __anchorState = { mapAfterSwitch: null };
 
-	try {
-		fetch(REMOTE_MAP_URL, { cache: 'no-store' })
-		.then(r => r.ok ? r.text() : '')
-		.then(t => {
-		const v = (t || '').trim();
-		if (v === 'Mesa' || v === 'Alpine') __anchorState.mapAfterSwitch = v;
-		})
-		.catch(() => {});
-	} catch (_) {}
-	</script>
+    <script>
+      const REMOTE_MAP_URL = 'https://gist.githubusercontent.com/Vikindor/d1e75690b9795995c9c3a7551d71bc9e/raw/';
+      
+      const __state2 = { mapAfterSwitch: null }; // Map2: Roots/Tropics
+      const __state3 = { mapAfterSwitch: null }; // Map3: Mesa/Alpine
+      
+      try {
+        fetch(REMOTE_MAP_URL, { cache: 'no-store' })
+        .then(r => r.ok ? r.text() : '')
+        .then(t => {
+          const raw = (t || '').trim();
+          
+          // --- читаем поля из гиста ---
+          const m2 = raw.match(/^\s*Map2\s*:\s*(.+?)\s*$/mi);
+          const m3 = raw.match(/^\s*Map3\s*:\s*(.+?)\s*$/mi);
+          const ms = raw.match(/^\s*Synchronized\s*:\s*(.+?)\s*$/mi);
+          
+          const map2Value = m2 ? m2[1].trim() : null;
+          const map3Value = m3 ? m3[1].trim() : null;
+          const syncValue = ms ? ms[1].trim() : null;
+          
+          // --- обновляем состояния ---
+          if (map2Value === 'Roots' || map2Value === 'Tropics') {
+            __state2.mapAfterSwitch = map2Value;
+          }
+          
+          if (map3Value === 'Mesa' || map3Value === 'Alpine') {
+            __state3.mapAfterSwitch = map3Value;
+          }
+          
+          // --- обновляем пилюли ---
+          const pill2 = document.getElementById('syncPill2');
+          const pill3 = document.getElementById('syncPill3');
+          const date2 = document.getElementById('syncDate2');
+          const date3 = document.getElementById('syncDate3');
+          
+          if (syncValue) {
+            if (pill2 && date2) {
+              date2.textContent = syncValue;
+              pill2.style.display = 'inline-flex';
+            }
+            if (pill3 && date3) {
+              date3.textContent = syncValue;
+              pill3.style.display = 'inline-flex';
+            }
+          } else {
+            if (pill2) pill2.style.display = 'none';
+            if (pill3) pill3.style.display = 'none';
+          }
+        })
+        .catch(() => {});
+      } catch (_) {}
+    </script>
 
-	<script>
-	"use strict";
-	const MapType = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
-	const anchor = Object.freeze({
-		switchUtcMs: Date.UTC(2025, 8, 1, 17, 0, 0, 0), // 2025-09-01 17:00:00 UTC
-		get mapAfterSwitch() {
-		const v = __anchorState.mapAfterSwitch;
-		return (v === "Mesa" || v === "Alpine") ? MapType[v] : null;
-		},
-	});
-	const DAY_SEC = 86_400;
-	const DAY_MS = DAY_SEC * 1000;
-	function floorDiv(a, b) { return Math.floor(a / b); }
-	function daysSinceAnchor(nowUtcMs) {
-		const seconds = Math.floor((nowUtcMs - anchor.switchUtcMs) / 1000);
-		return floorDiv(seconds, DAY_SEC);
-	}
-	function other(map) { return map === MapType.Mesa ? MapType.Alpine : MapType.Mesa; }
-	function currentMap(nowUtcMs) {
-		const base = anchor.mapAfterSwitch;
-		if (!base) return null;
-		const days = daysSinceAnchor(nowUtcMs);
-		return (days % 2 === 0) ? base : other(base);
-	}
-	function nextSwitchUtcMs(nowUtcMs) {
-		const days = daysSinceAnchor(nowUtcMs);
-		return anchor.switchUtcMs + (days + 1) * DAY_MS;
-	}
-	function countdownMs(nowUtcMs) {
-		const ns = nextSwitchUtcMs(nowUtcMs);
-		const diff = ns - nowUtcMs;
-		return Math.max(0, diff);
-	}
-	
-	// ===== UI helpers =====
-	const elCurrentMap = document.getElementById('currentMap');
-	const elCountdown = document.getElementById('countdown');
-	const elNextUTC = document.getElementById('nextSwitchUTC');
-	const elNowUTC  = document.getElementById('nowUTC');
-	
-	function pad2(n) { return String(n).padStart(2, "0"); }
-	function formatHMS(totalSeconds) {
-		const total = Math.max(0, Math.floor(totalSeconds));
-		const h = Math.floor(total / 3600);
-		const m = Math.floor((total % 3600) / 60);
-		const s = total % 60;
-		return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
-	}
-	function fmtDateTimeUTC(ms) {
-		const dt = new Date(ms);
-		return dt.toISOString().slice(0, 19).replace('T', ' ');
-	}
-	
-	function tick() {
-		const now = new Date();
-		const nowUtcMs = now.getTime();
-		const map = currentMap(nowUtcMs);
-		const nextMs = nextSwitchUtcMs(nowUtcMs);
-		const leftMs = countdownMs(nowUtcMs);
-	
-		if (elCurrentMap) elCurrentMap.textContent = (map ?? '-');
-		if (elCountdown)  elCountdown.textContent = formatHMS(leftMs / 1000);
-		if (elNowUTC)  elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
-		if (elNextUTC) elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
-	}
-	tick();
-	setInterval(tick, 1000);
-	</script>
+
+    <script>
+      "use strict";
+      
+      const Map2Type = Object.freeze({ Roots: "Roots", Tropics: "Tropics" });
+      const Map3Type = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
+      
+      const SWITCH_ANCHOR_MS = Date.UTC(2025, 10, 5, 17, 0, 0, 0); // 2025-11-05 17:00:00 UTC
+      
+      const anchor2 = Object.freeze({
+        switchUtcMs: SWITCH_ANCHOR_MS,
+        get mapAfterSwitch() {
+          const v = (__state2 && __state2.mapAfterSwitch) || null;
+          return (v === "Roots" || v === "Tropics") ? Map2Type[v] : null;
+        },
+      });
+      
+      const anchor3 = Object.freeze({
+        switchUtcMs: SWITCH_ANCHOR_MS,
+        get mapAfterSwitch() {
+          const v = (__state3 && __state3.mapAfterSwitch) || null;
+          return (v === "Mesa" || v === "Alpine") ? Map3Type[v] : null;
+        },
+      });
+      
+      const DAY_SEC = 86_400;
+      const DAY_MS  = DAY_SEC * 1000;
+      const floorDiv = (a, b) => Math.floor(a / b);
+      
+      function daysSinceAnchor(nowUtcMs, anchorMs) {
+        const seconds = Math.floor((nowUtcMs - anchorMs) / 1000);
+        return floorDiv(seconds, DAY_SEC);
+      }
+      
+      const other2 = (map) => map === Map2Type.Roots ? Map2Type.Tropics : Map2Type.Roots;
+      const other3 = (map) => map === Map3Type.Mesa  ? Map3Type.Alpine  : Map3Type.Mesa;
+      
+      function currentMap2(nowUtcMs) {
+        const base = anchor2.mapAfterSwitch;
+        if (!base) return null;
+        const days = daysSinceAnchor(nowUtcMs, anchor2.switchUtcMs);
+        return (days % 2 === 0) ? base : other2(base);
+      }
+      
+      function currentMap3(nowUtcMs) {
+        const base = anchor3.mapAfterSwitch;
+        if (!base) return null;
+        const days = daysSinceAnchor(nowUtcMs, anchor3.switchUtcMs);
+        return (days % 2 === 0) ? base : other3(base);
+      }
+      
+      function nextSwitchUtcMs(nowUtcMs) {
+        const days = daysSinceAnchor(nowUtcMs, SWITCH_ANCHOR_MS);
+        return SWITCH_ANCHOR_MS + (days + 1) * DAY_MS;
+      }
+      function countdownMs(nowUtcMs) {
+        const ns = nextSwitchUtcMs(nowUtcMs);
+        return Math.max(0, ns - nowUtcMs);
+      }
+      
+      // ===== UI =====
+      const elCurrentMap2 = document.getElementById('currentMap2');
+      const elCurrentMap3 = document.getElementById('currentMap3');
+      const elCountdown   = document.getElementById('countdown');
+      const elNextUTC     = document.getElementById('nextSwitchUTC');
+      const elNowUTC      = document.getElementById('nowUTC');
+      
+      const pad2 = (n) => String(n).padStart(2, "0");
+      function formatHMS(totalSeconds) {
+        const total = Math.max(0, Math.floor(totalSeconds));
+        const h = Math.floor(total / 3600);
+        const m = Math.floor((total % 3600) / 60);
+        const s = total % 60;
+        return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+      }
+      function fmtDateTimeUTC(ms) {
+        const dt = new Date(ms);
+        return dt.toISOString().slice(0, 19).replace('T', ' ');
+      }
+      
+      function tick() {
+        const now = new Date();
+        const nowUtcMs = now.getTime();
+      
+        const map2 = currentMap2(nowUtcMs);
+        const map3 = currentMap3(nowUtcMs);
+      
+        const nextMs = nextSwitchUtcMs(nowUtcMs);
+        const leftMs = countdownMs(nowUtcMs);
+      
+        if (elCurrentMap2) elCurrentMap2.textContent = (map2 ?? '—');
+        if (elCurrentMap3) elCurrentMap3.textContent = (map3 ?? '—');
+      
+        if (elCountdown) elCountdown.textContent = formatHMS(leftMs / 1000);
+        if (elNowUTC)    elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
+        if (elNextUTC)   elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
+      }
+      
+      tick();
+      setInterval(tick, 1000);
+    </script>
+
   </body>
 </html>
