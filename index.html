@@ -145,8 +145,8 @@
     <main class="wrap">
       <h1 class="title">Peak Today</h1>
 
-      <div class="notice hidden">
-        Notice placeholder
+      <div class="notice">
+        🍄 Roots will be present in every run until November 17 - after which, future maps will rotate randomly between Tropics and Roots. 🍄
 	  </div>
 
       <section class="cards">
@@ -200,7 +200,6 @@
         .then(t => {
           const raw = (t || '').trim();
           
-          // --- читаем поля из гиста ---
           const m2 = raw.match(/^\s*Map2\s*:\s*(.+?)\s*$/mi);
           const m3 = raw.match(/^\s*Map3\s*:\s*(.+?)\s*$/mi);
           const ms = raw.match(/^\s*Synchronized\s*:\s*(.+?)\s*$/mi);
@@ -209,7 +208,6 @@
           const map3Value = m3 ? m3[1].trim() : null;
           const syncValue = ms ? ms[1].trim() : null;
           
-          // --- обновляем состояния ---
           if (map2Value === 'Roots' || map2Value === 'Tropics') {
             __state2.mapAfterSwitch = map2Value;
           }
@@ -218,7 +216,6 @@
             __state3.mapAfterSwitch = map3Value;
           }
           
-          // --- обновляем пилюли ---
           const pill2 = document.getElementById('syncPill2');
           const pill3 = document.getElementById('syncPill3');
           const date2 = document.getElementById('syncDate2');
@@ -279,12 +276,16 @@
       const other2 = (map) => map === Map2Type.Roots ? Map2Type.Tropics : Map2Type.Roots;
       const other3 = (map) => map === Map3Type.Mesa  ? Map3Type.Alpine  : Map3Type.Mesa;
       
+	  // TEMP: lock Map 2 to Roots
+	  function currentMap2(nowUtcMs) { return Map2Type.Roots; }
+	  /*
       function currentMap2(nowUtcMs) {
         const base = anchor2.mapAfterSwitch;
         if (!base) return null;
         const days = daysSinceAnchor(nowUtcMs, anchor2.switchUtcMs);
         return (days % 2 === 0) ? base : other2(base);
       }
+	  */
       
       function currentMap3(nowUtcMs) {
         const base = anchor3.mapAfterSwitch;
