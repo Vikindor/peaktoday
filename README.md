@@ -28,7 +28,7 @@ No copyright or trademark infringement is intended.
 - Countdown timer until the next map switch
 - Minimalistic adaptive UI
 
-## 🖼 Screenshots
+## 🖼 Screenshot
 
 <img src="assets/peak_scr_web.jpg" width="100%" alt="Peak Today Web screenshot" title="Peak Today Web"/>
 
