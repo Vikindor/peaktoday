@@ -190,157 +190,110 @@
 
     <script>
       const REMOTE_MAP_URL = 'https://gist.githubusercontent.com/Vikindor/d1e75690b9795995c9c3a7551d71bc9e/raw/';
-      
-      const __state2 = { mapAfterSwitch: null }; // Map2: Roots/Tropics
-      const __state3 = { mapAfterSwitch: null }; // Map3: Mesa/Alpine
-      
-      try {
-        fetch(REMOTE_MAP_URL, { cache: 'no-store' })
-        .then(r => r.ok ? r.text() : '')
-        .then(t => {
-          const raw = (t || '').trim();
-          
-          const m2 = raw.match(/^\s*Map2\s*:\s*(.+?)\s*$/mi);
-          const m3 = raw.match(/^\s*Map3\s*:\s*(.+?)\s*$/mi);
-          const ms = raw.match(/^\s*Synchronized\s*:\s*(.+?)\s*$/mi);
-          
-          const map2Value = m2 ? m2[1].trim() : null;
-          const map3Value = m3 ? m3[1].trim() : null;
-          const syncValue = ms ? ms[1].trim() : null;
-          
-          if (map2Value === 'Roots' || map2Value === 'Tropics') {
-            __state2.mapAfterSwitch = map2Value;
-          }
-          
-          if (map3Value === 'Mesa' || map3Value === 'Alpine') {
-            __state3.mapAfterSwitch = map3Value;
-          }
-          
+    
+      const __state2 = { mapAfterSwitch: null, rotating: true, synchronized: null };
+      const __state3 = { mapAfterSwitch: null, rotating: true, synchronized: null };
+    
+      fetch(REMOTE_MAP_URL, { cache: 'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data) return;
+    
+          const m2 = data.map2 || {};
+          const m3 = data.map3 || {};
+          const sync = data.synchronized ? String(data.synchronized) : null;
+    
+          if (m2.after === 'Roots' || m2.after === 'Tropics') __state2.mapAfterSwitch = m2.after;
+          __state2.rotating = m2.rotating !== false;
+    
+          if (m3.after === 'Mesa' || m3.after === 'Alpine') __state3.mapAfterSwitch = m3.after;
+          __state3.rotating = m3.rotating !== false;
+    
+          __state2.synchronized = sync;
+          __state3.synchronized = sync;
+    
           const pill2 = document.getElementById('syncPill2');
           const pill3 = document.getElementById('syncPill3');
           const date2 = document.getElementById('syncDate2');
           const date3 = document.getElementById('syncDate3');
-          
-          if (syncValue) {
-            if (pill2 && date2) {
-              date2.textContent = syncValue;
-              pill2.style.display = 'inline-flex';
-            }
-            if (pill3 && date3) {
-              date3.textContent = syncValue;
-              pill3.style.display = 'inline-flex';
-            }
+    
+          if (sync) {
+            if (date2) date2.textContent = sync;
+            if (date3) date3.textContent = sync;
+            if (pill2) pill2.style.display = 'inline-flex';
+            if (pill3) pill3.style.display = 'inline-flex';
           } else {
             if (pill2) pill2.style.display = 'none';
             if (pill3) pill3.style.display = 'none';
           }
         })
         .catch(() => {});
-      } catch (_) {}
     </script>
-
 
     <script>
       "use strict";
-      
-      const Map2Type = Object.freeze({ Roots: "Roots", Tropics: "Tropics" });
-      const Map3Type = Object.freeze({ Mesa: "Mesa", Alpine: "Alpine" });
-      
+    
+      const Map2Type = { Roots: "Roots", Tropics: "Tropics" };
+      const Map3Type = { Mesa: "Mesa", Alpine: "Alpine" };
+    
       const SWITCH_ANCHOR_MS = Date.UTC(2025, 10, 5, 17, 0, 0, 0); // 2025-11-05 17:00:00 UTC
-      
-      const anchor2 = Object.freeze({
-        switchUtcMs: SWITCH_ANCHOR_MS,
-        get mapAfterSwitch() {
-          const v = (__state2 && __state2.mapAfterSwitch) || null;
-          return (v === "Roots" || v === "Tropics") ? Map2Type[v] : null;
-        },
-      });
-      
-      const anchor3 = Object.freeze({
-        switchUtcMs: SWITCH_ANCHOR_MS,
-        get mapAfterSwitch() {
-          const v = (__state3 && __state3.mapAfterSwitch) || null;
-          return (v === "Mesa" || v === "Alpine") ? Map3Type[v] : null;
-        },
-      });
-      
-      const DAY_SEC = 86_400;
-      const DAY_MS  = DAY_SEC * 1000;
-      const floorDiv = (a, b) => Math.floor(a / b);
-      
-      function daysSinceAnchor(nowUtcMs, anchorMs) {
-        const seconds = Math.floor((nowUtcMs - anchorMs) / 1000);
-        return floorDiv(seconds, DAY_SEC);
-      }
-      
-      const other2 = (map) => map === Map2Type.Roots ? Map2Type.Tropics : Map2Type.Roots;
-      const other3 = (map) => map === Map3Type.Mesa  ? Map3Type.Alpine  : Map3Type.Mesa;
-      
-	  // TEMP: lock Map 2 to Roots
-	  function currentMap2(nowUtcMs) { return Map2Type.Roots; }
-	  /*
-      function currentMap2(nowUtcMs) {
-        const base = anchor2.mapAfterSwitch;
-        if (!base) return null;
-        const days = daysSinceAnchor(nowUtcMs, anchor2.switchUtcMs);
-        return (days % 2 === 0) ? base : other2(base);
-      }
-	  */
-      
-      function currentMap3(nowUtcMs) {
-        const base = anchor3.mapAfterSwitch;
-        if (!base) return null;
-        const days = daysSinceAnchor(nowUtcMs, anchor3.switchUtcMs);
-        return (days % 2 === 0) ? base : other3(base);
-      }
-      
-      function nextSwitchUtcMs(nowUtcMs) {
-        const days = daysSinceAnchor(nowUtcMs, SWITCH_ANCHOR_MS);
-        return SWITCH_ANCHOR_MS + (days + 1) * DAY_MS;
-      }
-      function countdownMs(nowUtcMs) {
-        const ns = nextSwitchUtcMs(nowUtcMs);
-        return Math.max(0, ns - nowUtcMs);
-      }
-      
-      // ===== UI =====
+      const DAY_MS = 86_400_000;
+    
       const elCurrentMap2 = document.getElementById('currentMap2');
       const elCurrentMap3 = document.getElementById('currentMap3');
       const elCountdown   = document.getElementById('countdown');
       const elNextUTC     = document.getElementById('nextSwitchUTC');
       const elNowUTC      = document.getElementById('nowUTC');
-      
-      const pad2 = (n) => String(n).padStart(2, "0");
-      function formatHMS(totalSeconds) {
-        const total = Math.max(0, Math.floor(totalSeconds));
-        const h = Math.floor(total / 3600);
-        const m = Math.floor((total % 3600) / 60);
-        const s = total % 60;
+    
+      const pad2 = n => String(n).padStart(2, "0");
+      const fmtHMS = secs => {
+        const t = Math.max(0, Math.floor(secs));
+        const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
         return `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+      };
+      const fmtUTC = ms => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
+    
+      const daysSinceAnchor = nowMs => Math.floor((nowMs - SWITCH_ANCHOR_MS) / DAY_MS);
+      const other2 = m => (m === Map2Type.Roots ? Map2Type.Tropics : Map2Type.Roots);
+      const other3 = m => (m === Map3Type.Mesa  ? Map3Type.Alpine  : Map3Type.Mesa);
+    
+      function currentMap2(nowMs) {
+        const base = __state2.mapAfterSwitch;
+        if (!base) return null;
+        if (!__state2.rotating) return base;
+        const days = daysSinceAnchor(nowMs);
+        return (days % 2 === 0) ? base : other2(base);
       }
-      function fmtDateTimeUTC(ms) {
-        const dt = new Date(ms);
-        return dt.toISOString().slice(0, 19).replace('T', ' ');
+    
+      function currentMap3(nowMs) {
+        const base = __state3.mapAfterSwitch;
+        if (!base) return null;
+        if (!__state3.rotating) return base;
+        const days = daysSinceAnchor(nowMs);
+        return (days % 2 === 0) ? base : other3(base);
       }
-      
+    
+      const nextSwitchUtcMs = nowMs => {
+        const d = daysSinceAnchor(nowMs);
+        return SWITCH_ANCHOR_MS + (d + 1) * DAY_MS;
+      };
+    
       function tick() {
-        const now = new Date();
-        const nowUtcMs = now.getTime();
-      
-        const map2 = currentMap2(nowUtcMs);
-        const map3 = currentMap3(nowUtcMs);
-      
-        const nextMs = nextSwitchUtcMs(nowUtcMs);
-        const leftMs = countdownMs(nowUtcMs);
-      
-        if (elCurrentMap2) elCurrentMap2.textContent = (map2 ?? '—');
-        if (elCurrentMap3) elCurrentMap3.textContent = (map3 ?? '—');
-      
-        if (elCountdown) elCountdown.textContent = formatHMS(leftMs / 1000);
-        if (elNowUTC)    elNowUTC.innerHTML  = `Now (UTC):<br>${fmtDateTimeUTC(nowUtcMs)}`;
-        if (elNextUTC)   elNextUTC.innerHTML = `Next switch (UTC):<br>${fmtDateTimeUTC(nextMs)}`;
+        const nowMs = Date.now();
+    
+        const map2 = currentMap2(nowMs);
+        const map3 = currentMap3(nowMs);
+    
+        const nextMs = nextSwitchUtcMs(nowMs);
+        const leftMs = Math.max(0, nextMs - nowMs);
+    
+        if (elCurrentMap2) elCurrentMap2.textContent = map2 ?? '—';
+        if (elCurrentMap3) elCurrentMap3.textContent = map3 ?? '—';
+        if (elCountdown)   elCountdown.textContent   = fmtHMS(leftMs / 1000);
+        if (elNowUTC)      elNowUTC.innerHTML        = `Now (UTC):<br>${fmtUTC(nowMs)}`;
+        if (elNextUTC)     elNextUTC.innerHTML       = `Next switch (UTC):<br>${fmtUTC(nextMs)}`;
       }
-      
+    
       tick();
       setInterval(tick, 1000);
     </script>
