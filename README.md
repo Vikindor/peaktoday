@@ -24,9 +24,9 @@ No copyright or trademark infringement is intended.
 
 ## ✨ Features
 
-- Display of the current active biomes: Root/Tropics & Mesa/Alpine
-- Countdown timer until the next map switch
-- Minimalistic adaptive UI
+- Display of the current active biomes: Root/Tropics & Mesa/Alpine.
+- Countdown timer until the next map switch.
+- Minimalistic adaptive UI.
 
 ## 🖼 Screenshot
 
