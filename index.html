@@ -65,7 +65,8 @@
       backdrop-filter: blur(3px);
       font-size: 14px;
       line-height: 1.4;
-      max-width: 1100px;
+      max-width: 948px;
+	  white-space: pre-line;
     }
     .notice.hidden { display: none; }
 
@@ -145,9 +146,7 @@
     <main class="wrap">
       <h1 class="title">Peak Today</h1>
 
-      <div class="notice">
-        🍄 Roots will be present in every run until November 17 - after which, future maps will rotate randomly between Tropics and Roots. 🍄
-	  </div>
+      <div class="notice hidden"></div>
 
       <section class="cards">
         <div class="card">
@@ -191,8 +190,33 @@
     <script>
       const REMOTE_MAP_URL = 'https://gist.githubusercontent.com/Vikindor/d1e75690b9795995c9c3a7551d71bc9e/raw/';
     
-      const __state2 = { mapAfterSwitch: null, rotating: true, synchronized: null };
-      const __state3 = { mapAfterSwitch: null, rotating: true, synchronized: null };
+      const __state2  = { mapAfterSwitch: null, rotating: true, synchronized: null };
+      const __state3  = { mapAfterSwitch: null, rotating: true, synchronized: null };
+      const __notice  = { hidden: true, message: "" };
+    
+      function renderSynced(sync) {
+        const pill2 = document.getElementById('syncPill2');
+        const pill3 = document.getElementById('syncPill3');
+        const date2 = document.getElementById('syncDate2');
+        const date3 = document.getElementById('syncDate3');
+        if (sync) {
+          if (date2) date2.textContent = sync;
+          if (date3) date3.textContent = sync;
+          if (pill2) pill2.style.display = 'inline-flex';
+          if (pill3) pill3.style.display = 'inline-flex';
+        } else {
+          if (pill2) pill2.style.display = 'none';
+          if (pill3) pill3.style.display = 'none';
+        }
+      }
+    
+      function renderNotice() {
+        const el = document.querySelector('.notice');
+        if (!el) return;
+        const show = !__notice.hidden && __notice.message;
+        el.textContent = show ? __notice.message : '';
+        el.classList.toggle('hidden', !show);
+      }
     
       fetch(REMOTE_MAP_URL, { cache: 'no-store' })
         .then(r => r.ok ? r.json() : null)
@@ -201,31 +225,20 @@
     
           const m2 = data.map2 || {};
           const m3 = data.map3 || {};
-          const sync = data.synchronized ? String(data.synchronized) : null;
-    
           if (m2.after === 'Roots' || m2.after === 'Tropics') __state2.mapAfterSwitch = m2.after;
           __state2.rotating = m2.rotating !== false;
-    
-          if (m3.after === 'Mesa' || m3.after === 'Alpine') __state3.mapAfterSwitch = m3.after;
+          if (m3.after === 'Mesa' || m3.after === 'Alpine')   __state3.mapAfterSwitch = m3.after;
           __state3.rotating = m3.rotating !== false;
     
+          const sync = data.synchronized ? String(data.synchronized) : null;
           __state2.synchronized = sync;
           __state3.synchronized = sync;
+          renderSynced(sync);
     
-          const pill2 = document.getElementById('syncPill2');
-          const pill3 = document.getElementById('syncPill3');
-          const date2 = document.getElementById('syncDate2');
-          const date3 = document.getElementById('syncDate3');
-    
-          if (sync) {
-            if (date2) date2.textContent = sync;
-            if (date3) date3.textContent = sync;
-            if (pill2) pill2.style.display = 'inline-flex';
-            if (pill3) pill3.style.display = 'inline-flex';
-          } else {
-            if (pill2) pill2.style.display = 'none';
-            if (pill3) pill3.style.display = 'none';
-          }
+          const n = data.notice || {};
+          __notice.hidden  = n.hidden !== false;
+          __notice.message = (n.message || '').trim();
+          renderNotice();
         })
         .catch(() => {});
     </script>
